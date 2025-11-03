@@ -1,0 +1,183 @@
+.common-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background-image: url("../assets/background-login.png");
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  padding: 20px;
+
+  @media (max-width: 768px) {
+    padding: 10px;
+  }
+}
+
+.common-logo {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 300px;
+  max-height: 300px;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    max-width: 150px;
+    max-height: 150px;
+  }
+}
+
+.common-card {
+  position: absolute;
+  width: 355px;
+  height: 268px;
+  top: 510px;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 1;
+  border-radius: 32px;
+  gap: 10px;
+  border: 1px solid rgba(244, 244, 244, 0.06);
+  padding: 20px;
+  background: rgba(27, 27, 27, 0.03);
+  box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(64px);
+  text-align: center;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    height: auto;
+    top: 60%;
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+    width: 95%;
+    top: 55%;
+  }
+}
+
+.common-card-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 355px;
+  height: auto;
+  min-height: 300px;
+  opacity: 1;
+  border-radius: 32px;
+  gap: 10px;
+  border: 1px solid rgba(244, 244, 244, 0.06);
+  padding: 20px;
+  background: rgba(27, 27, 27, 0.03);
+  box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(64px);
+  text-align: center;
+  z-index: 10;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+    width: 95%;
+  }
+}
+
+.common-title {
+  color: white !important;
+  margin-bottom: 16px !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+
+  @media (max-width: 768px) {
+    font-size: 20px !important;
+  }
+}
+
+.common-text {
+  color: rgba(255, 255, 255, 0.8) !important;
+  display: block !important;
+  margin-bottom: 24px !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+
+  @media (max-width: 768px) {
+    font-size: 13px !important;
+  }
+}
+
+.common-button {
+  width: 315px !important;
+  height: 55px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background: #f93324 !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0px 0px 30px 0px #ffae5c inset !important;
+  opacity: 1 !important;
+  padding: 10px !important;
+  gap: 10px !important;
+  transition: all 0.3s ease !important;
+
+  @media (max-width: 768px) {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 15px !important;
+  }
+}
+
+// Silhouette figure styles
+.common-silhouette {
+  position: absolute;
+  bottom: 35%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 150px;
+
+  @media (max-width: 768px) {
+    width: 90px;
+    height: 120px;
+    bottom: 40%;
+  }
+}
+
+.common-silhouette-head {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 50px;
+
+  @media (max-width: 768px) {
+    width: 40px;
+    height: 40px;
+    top: -30px;
+  }
+}
+
+// Large circle styles
+.common-circle {
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 280px;
+
+  @media (max-width: 768px) {
+    width: 200px;
+    height: 200px;
+    top: 20%;
+  }
+}
