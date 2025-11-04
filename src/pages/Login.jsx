@@ -3,7 +3,7 @@ import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logoImage from '../assets/Logo.png';
+import logoImage from '../assets/Logo.jpg';
 import '../style/Common.scss';
 import '../style/Login.scss';
 
@@ -59,7 +59,8 @@ const Login = () => {
 
       <div className="common-card-center">
         <Title level={3} className="common-title">
-          Welcome to ZenAI
+          Welcome to Drona AI
+          
         </Title>
 
         <Text className="common-text">

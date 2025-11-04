@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import logoImage from '../assets/Logo.png';
+import logoImage from '../assets/Logo.jpg';
 import '../style/Common.scss';
 import '../style/Login.scss';
 

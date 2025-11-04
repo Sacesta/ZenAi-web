@@ -1,29 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Input, Button, Avatar, message, Modal } from 'antd';
-import { SendOutlined, ArrowLeftOutlined, MenuOutlined, UserOutlined, PlayCircleOutlined, AudioOutlined, CloseOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import logoImage from '../assets/AiIcon.png';
-import AudioHandler from '../components/AudioHandler';
+import React, { useState, useRef, useEffect } from "react";
+import { Input, Button, Avatar, message } from "antd";
+import {
+  SendOutlined,
+  ArrowLeftOutlined,
+  MenuOutlined,
+  UserOutlined,
+  PlayCircleOutlined,
+  LogoutOutlined,
+} from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import logoImage from "../assets/AiIcon.jpg";
+import AudioHandler from "../components/AudioHandler";
 
-import '../style/Chat.scss';
+import "../style/Chat.scss";
 
 const Chat = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatList, setChatList] = useState([]);
   const [selectedChatId, setSelectedChatId] = useState(null);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [playingMessageId, setPlayingMessageId] = useState(null);
-  const [isProcessingModalVisible, setIsProcessingModalVisible] = useState(false);
-  const [isPlaybackModalVisible, setIsPlaybackModalVisible] = useState(false);
+
   const messagesEndRef = useRef(null);
-  const waveformBarsRef = useRef([]);
-  const animationRef = useRef(null);
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -36,123 +50,119 @@ const Chat = () => {
     const userMessage = {
       id: Date.now(),
       text: inputValue,
-      sender: 'user',
+      sender: "user",
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage]);
     const currentQuery = inputValue;
-    setInputValue('');
+    setInputValue("");
     setIsLoading(true);
 
+    const typingMessage = {
+      id: "typing-indicator",
+      text: "",
+      sender: "ai",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages((prev) => [...prev, typingMessage]);
+
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       const response = await fetch(`${API_BASE_URL}/api/auth/chat-question`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           question: currentQuery,
           user_id: user.id,
           token: token,
-          assistantId: 'yoga_assistant',
+          assistantId: "yoga_assistant",
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+
         const aiMessage = {
           id: Date.now() + 1,
           text: data.data.answerrr,
-          sender: 'ai',
+          sender: "ai",
           timestamp: new Date(),
           audioUrl: null, // Will be set if voice response is generated
         };
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
       } else {
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+
         const errorMessage = {
           id: Date.now() + 1,
-          text: data.message || 'Failed to get response from AI',
-          sender: 'ai',
+          text: data.message || "Failed to get response from AI",
+          sender: "ai",
           timestamp: new Date(),
         };
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages((prev) => [...prev, errorMessage]);
       }
     } catch (error) {
-      console.error('Chat API error:', error);
+      console.error("Chat API error:", error);
+      setMessages((prev) =>
+        prev.filter((msg) => msg.id !== "typing-indicator")
+      );
+
       const errorMessage = {
         id: Date.now() + 1,
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'ai',
+        text: "Sorry, I encountered an error. Please try again.",
+        sender: "ai",
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const startProcessingAnimation = () => {
-    if (waveformBarsRef.current.length === 0) return;
-
-    animationRef.current = gsap.timeline({ repeat: -1 });
-
-    waveformBarsRef.current.forEach((bar, index) => {
-      const delay = index * 0.1;
-      const height = Math.random() * 40 + 10; // Random height between 10-50
-
-      animationRef.current.to(bar, {
-        height: height,
-        duration: 0.3,
-        ease: "power2.inOut",
-        delay: delay
-      }, 0);
-    });
-  };
-
-  const stopProcessingAnimation = () => {
-    if (animationRef.current) {
-      animationRef.current.kill();
-      animationRef.current = null;
-
-      // Reset bars to default height
-      waveformBarsRef.current.forEach((bar) => {
-        gsap.to(bar, {
-          height: 10,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-      });
-    }
-  };
-
   const handleAudioRecorded = async (audioBlob) => {
     setIsLoading(true);
-    setIsProcessingModalVisible(true);
-    startProcessingAnimation();
+
+    // Add typing indicator for AI response
+    const typingMessage = {
+      id: "typing-indicator",
+      text: "",
+      sender: "ai",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages((prev) => [...prev, typingMessage]);
+
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
 
       const formData = new FormData();
-      formData.append('audio', audioBlob, 'audio.webm');
-      formData.append('user_id', user.id);
-      formData.append('token', token);
-      formData.append('assistantId', 'yoga_assistant');
-      formData.append('voiceId', 'Joanna');
-      formData.append('languageCode', 'en-US');
+      formData.append("audio", audioBlob, "audio.webm");
+      formData.append("user_id", user.id);
+      formData.append("token", token);
+      formData.append("assistantId", "yoga_assistant");
+      formData.append("voiceId", "Joanna");
+      formData.append("languageCode", "en-US");
 
       const response = await fetch(`${API_BASE_URL}/api/voice/voice-to-voice`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
@@ -160,94 +170,85 @@ const Chat = () => {
       const data = await response.json();
 
       if (data.success) {
+        // Remove typing indicator
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+
         // Add user audio message (transcribed text)
         const userMessage = {
           id: Date.now(),
           text: data.data.transcribedText,
-          sender: 'user',
+          sender: "user",
           timestamp: new Date(),
           audioUrl: data.data.inputAudioUrl,
         };
-        setMessages(prev => [...prev, userMessage]);
+        setMessages((prev) => [...prev, userMessage]);
 
         // Add AI response with audio
         const aiMessage = {
           id: Date.now() + 1,
           text: data.data.aiTextResponse,
-          sender: 'ai',
+          sender: "ai",
           timestamp: new Date(),
           audioUrl: data.data.outputAudioUrl,
         };
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
 
-        // Show playback modal and automatically play the AI audio response
-        setIsProcessingModalVisible(false);
-        stopProcessingAnimation();
-        setIsPlaybackModalVisible(true);
-        startPlaybackAnimation();
+        // Automatically play the AI audio response
         const audio = new Audio(data.data.outputAudioUrl);
-        audio.play();
-        setPlayingMessageId(aiMessage.id);
-        setIsAudioPlaying(true);
-        audio.onended = () => {
-          setPlayingMessageId(null);
-          setIsAudioPlaying(false);
-          setIsPlaybackModalVisible(false);
-          stopPlaybackAnimation();
-        };
+        try {
+          setIsPlaying(true);
+          await audio.play();
+          audio.onended = () => {
+            setIsPlaying(false);
+          };
+        } catch (error) {
+          console.error("Autoplay failed:", error);
+          message.warning(
+            "Autoplay blocked by browser. Please click the play button to hear the response."
+          );
+          setIsPlaying(false);
+        }
       } else {
-        message.error(data.error || 'Failed to process voice message');
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+        message.error(data.error || "Failed to process voice message");
       }
     } catch (error) {
-      console.error('Voice API error:', error);
-      message.error('Failed to process voice message');
+      console.error("Voice API error:", error);
+      setMessages((prev) =>
+        prev.filter((msg) => msg.id !== "typing-indicator")
+      );
+      message.error("Failed to process voice message");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAudioPlay = (isPlaying) => {
-    setIsAudioPlaying(isPlaying);
-  };
-
-  const handleMessageAudioPlay = (messageId, audioUrl) => {
-    if (playingMessageId === messageId) {
-      setPlayingMessageId(null);
-      setIsAudioPlaying(false);
-    } else {
-      setPlayingMessageId(messageId);
-      setIsAudioPlaying(true);
-      const audio = new Audio(audioUrl);
-      audio.play();
-      audio.onended = () => {
-        setPlayingMessageId(null);
-        setIsAudioPlaying(false);
-      };
-    }
-  };
-
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const fetchChatList = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
 
       const response = await fetch(`${API_BASE_URL}/api/auth/chat-list`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           user_id: user.id,
@@ -259,10 +260,10 @@ const Chat = () => {
       if (data.success) {
         setChatList(data.data.chats || []);
       } else {
-        console.error('Failed to fetch chat list:', data.message);
+        console.error("Failed to fetch chat list:", data.message);
       }
     } catch (error) {
-      console.error('Chat list API error:', error);
+      console.error("Chat list API error:", error);
     }
   };
 
@@ -271,15 +272,15 @@ const Chat = () => {
     setSidebarOpen(false);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
 
       const response = await fetch(`${API_BASE_URL}/api/auth/chat-history`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           chat_id: chatId,
@@ -296,24 +297,24 @@ const Chat = () => {
           historyMessages.push({
             id: Date.now() + index * 2,
             text: msg.question,
-            sender: 'user',
+            sender: "user",
             timestamp: new Date(msg.created_at),
           });
           // Add AI answer
           historyMessages.push({
             id: Date.now() + index * 2 + 1,
             text: msg.answer,
-            sender: 'ai',
+            sender: "ai",
             timestamp: new Date(msg.updated_at),
           });
         });
         setMessages(historyMessages);
       } else {
-        console.error('Failed to fetch chat history:', data.message);
+        console.error("Failed to fetch chat history:", data.message);
         setMessages([]);
       }
     } catch (error) {
-      console.error('Chat history API error:', error);
+      console.error("Chat history API error:", error);
       setMessages([]);
     }
   };
@@ -334,16 +335,29 @@ const Chat = () => {
           onClick={() => setSidebarOpen(!sidebarOpen)}
         />
         <div className="chat-logo-container">
-          <img src={logoImage} alt="ZenAI Logo" className="chat-logo" />
+          <h1 style={{ color: "white" }}>Drona</h1>
+        </div>
+        <div className="chat-user-info">
+          <span className="user-email">{user.email}</span>
+          <Button
+            type="text"
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+            className="logout-button"
+          />
         </div>
       </div>
 
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="chat-welcome">
-            <img src={logoImage} alt="ZenAI Logo" className="chat-welcome-logo" />
+            <img
+              src={logoImage}
+              alt="ZenAI Logo"
+              className="chat-welcome-logo"
+            />
             <div className="chat-welcome-text">
-              Welcome to ZenAI! How can I help you today?
+              Welcome to Drona How can I help you today?
             </div>
           </div>
         ) : (
@@ -353,31 +367,43 @@ const Chat = () => {
               className={`chat-message chat-message-${message.sender}`}
             >
               <Avatar
-                className="chat-message-avatar"
-                icon={message.sender === 'user' ? <UserOutlined /> : null}
-                src={message.sender === 'ai' ? logoImage : null}
-                size={40}
+                className={`chat-message-avatar ${
+                  isRecording && message.sender === "ai" ? "recording" : ""
+                } ${isPlaying && message.sender === "ai" ? "playing" : ""}`}
+                icon={message.sender === "user" ? <UserOutlined /> : null}
+                src={message.sender === "ai" ? logoImage : null}
+                size={60}
               />
               <div className="chat-message-body">
                 <div className="chat-message-content">
-                  {message.text}
+                  {message.isTyping ? (
+                    <div className="typing-indicator">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  ) : (
+                    message.text
+                  )}
                 </div>
-                {message.audioUrl && message.sender === 'ai' && (
+                {message.audioUrl && message.sender === "ai" && (
                   <div className="chat-message-audio">
                     <Button
                       type="text"
-                      icon={<PlayCircleOutlined />}
-                      onClick={() => handleMessageAudioPlay(message.id, message.audioUrl)}
+                      icon={<PlayCircleOutlined style={{ color: "#52c41a" }} />}
+                      onClick={() => {
+                        const audio = new Audio(message.audioUrl);
+                        setIsPlaying(true);
+                        audio.play();
+                        audio.onended = () => {
+                          setIsPlaying(false);
+                        };
+                      }}
                       className="chat-message-play-button"
                       size="small"
                     >
-                      {playingMessageId === message.id ? 'Playing...' : 'Play Audio'}
+                      Play Audio
                     </Button>
-                    {playingMessageId === message.id && (
-                      <div className="audio-playback-circle">
-                        <PlayCircleOutlined />
-                      </div>
-                    )}
                   </div>
                 )}
                 <div className="chat-message-time">
@@ -400,19 +426,23 @@ const Chat = () => {
             onPressEnter={handleKeyPress}
             suffix={
               <div className="chat-input-suffix">
-                <AudioHandler
-                  onAudioRecorded={handleAudioRecorded}
-                  onAudioPlay={handleAudioPlay}
-                  isPlaying={isAudioPlaying}
-                />
-                <Button
-                  type="text"
-                  icon={<SendOutlined />}
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
-                  className="chat-send-button"
-                  loading={isLoading}
-                />
+                {!inputValue.trim() ? (
+                  <AudioHandler
+                    onAudioRecorded={handleAudioRecorded}
+                    isLoading={isLoading}
+                    onRecordingStart={() => setIsRecording(true)}
+                    onRecordingStop={() => setIsRecording(false)}
+                  />
+                ) : (
+                  <Button
+                    type="text"
+                    icon={<SendOutlined />}
+                    onClick={handleSendMessage}
+                    disabled={!inputValue.trim() || isLoading}
+                    className="chat-send-button"
+                    loading={isLoading}
+                  />
+                )}
               </div>
             }
           />
@@ -436,108 +466,23 @@ const Chat = () => {
               chatList.map((chat) => (
                 <div
                   key={chat.chat_id}
-                  className={`chat-list-item ${selectedChatId === chat.chat_id ? 'active' : ''}`}
+                  className={`chat-list-item ${
+                    selectedChatId === chat.chat_id ? "active" : ""
+                  }`}
                   onClick={() => handleChatSelect(chat.chat_id)}
                 >
-                  <div className="chat-list-title">{chat.first_question || `Chat ${chat.chat_id}`}</div>
-                  <div className="chat-list-date">{new Date(chat.created_at).toLocaleDateString()}</div>
+                  <div className="chat-list-title">
+                    {chat.first_question || `Chat ${chat.chat_id}`}
+                  </div>
+                  <div className="chat-list-date">
+                    {new Date(chat.created_at).toLocaleDateString()}
+                  </div>
                 </div>
               ))
             )}
           </div>
         </div>
       )}
-
-      {/* Processing Modal */}
-      <Modal
-        open={isProcessingModalVisible}
-        footer={null}
-        closable={false}
-        centered
-        className="audio-recording-modal"
-        maskStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      >
-        <div className="audio-recording-content">
-          <div className="audio-animation-container">
-            <div className="waveform-container">
-              {Array.from({ length: 20 }, (_, i) => (
-                <div
-                  key={i}
-                  ref={(el) => (waveformBarsRef.current[i] = el)}
-                  className="waveform-bar"
-                  style={{
-                    width: '3px',
-                    height: '10px',
-                    backgroundColor: '#ff4d4f',
-                    borderRadius: '2px',
-                    margin: '0 1px',
-                    transformOrigin: 'bottom'
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          <div style={{ color: 'white', fontSize: '16px', textAlign: 'center', marginTop: '20px' }}>
-            AI is listening to you...
-          </div>
-          <Button
-            type="text"
-            icon={<CloseOutlined style={{ color: '#ff4d4f' }} />}
-            onClick={() => {
-              setIsProcessingModalVisible(false);
-              setIsLoading(false);
-            }}
-            className="audio-cancel-button"
-            size="large"
-          />
-        </div>
-      </Modal>
-
-      {/* Playback Modal */}
-      <Modal
-        open={isPlaybackModalVisible}
-        footer={null}
-        closable={false}
-        centered
-        className="audio-recording-modal"
-        maskStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-      >
-        <div className="audio-recording-content">
-          <div className="audio-animation-container">
-            <div className="waveform-container">
-              {Array.from({ length: 20 }, (_, i) => (
-                <div
-                  key={i}
-                  ref={(el) => (waveformBarsRef.current[i] = el)}
-                  className="waveform-bar"
-                  style={{
-                    width: '3px',
-                    height: '10px',
-                    backgroundColor: '#52c41a',
-                    borderRadius: '2px',
-                    margin: '0 1px',
-                    transformOrigin: 'bottom'
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-          <div style={{ color: 'white', fontSize: '16px', textAlign: 'center', marginTop: '20px' }}>
-            AI is speaking...
-          </div>
-          <Button
-            type="text"
-            icon={<CloseOutlined style={{ color: '#ff4d4f' }} />}
-            onClick={() => {
-              setIsPlaybackModalVisible(false);
-              setPlayingMessageId(null);
-              setIsAudioPlaying(false);
-            }}
-            className="audio-cancel-button"
-            size="large"
-          />
-        </div>
-      </Modal>
     </div>
   );
 };
