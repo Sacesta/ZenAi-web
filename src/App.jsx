@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
 import VerifyOTP from './pages/VerifyOTP';
@@ -25,6 +27,7 @@ function App() {
             <Route path="/chat" element={<Chat />} />
             <Route path="/" element={<Navigate to="/landing" replace />} />
           </Routes>
+          <ToastContainer />
         </div>
       </Router>
     </ConfigProvider>

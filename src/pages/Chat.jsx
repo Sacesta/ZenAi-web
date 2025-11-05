@@ -484,22 +484,7 @@ const Chat = () => {
                   </div>
                   {message.audioUrl && message.sender === "ai" && (
                     <div className="chat-message-audio">
-                      <Button
-                        type="text"
-                        icon={<PlayCircleOutlined style={{ color: "#52c41a" }} />}
-                        onClick={() => {
-                          const audio = new Audio(message.audioUrl);
-                          setIsPlaying(true);
-                          audio.play();
-                          audio.onended = () => {
-                            setIsPlaying(false);
-                          };
-                        }}
-                        className="chat-message-play-button"
-                        size="small"
-                      >
-                        Play Audio
-                      </Button>
+                     
                     </div>
                   )}
                   {!message.isTyping && (
@@ -551,6 +536,7 @@ const Chat = () => {
                     <AudioHandler
                       onAudioRecorded={handleAudioRecorded}
                       isLoading={isLoading}
+                      isPlaying={isPlaying}
                       onRecordingStart={() => setIsRecording(true)}
                       onRecordingStop={() => setIsRecording(false)}
                     />
@@ -615,13 +601,16 @@ const Chat = () => {
         </div>
         <div className="chat-sidebar-footer">
           <Dropdown
-            overlay={
-              <Menu>
-                <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
-                  Logout
-                </Menu.Item>
-              </Menu>
-            }
+            menu={{
+              items: [
+                {
+                  key: 'logout',
+                  icon: <LogoutOutlined />,
+                  label: 'Logout',
+                  onClick: handleLogout,
+                },
+              ],
+            }}
             trigger={['click']}
             placement="topRight"
           >

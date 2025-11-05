@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { Button, message } from 'antd';
+import { Button } from 'antd';
 import { AudioOutlined, AudioMutedOutlined } from '@ant-design/icons';
+import { toast } from 'react-toastify';
 import logoImage from '../assets/AiIcon.jpg';
 
-const AudioHandler = ({ onAudioRecorded, isLoading, onRecordingStart, onRecordingStop }) => {
+const AudioHandler = ({ onAudioRecorded, isLoading, isPlaying, onRecordingStart, onRecordingStop }) => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const streamRef = useRef(null);
@@ -38,7 +39,72 @@ const AudioHandler = ({ onAudioRecorded, isLoading, onRecordingStart, onRecordin
       if (onRecordingStart) onRecordingStart();
     } catch (error) {
       console.error('Error starting recording:', error);
-      message.error('Failed to access microphone');
+
+      // Provide specific error messages based on the error type
+      if (error.name === 'NotFoundError') {
+        toast.error('No microphone found. Please connect a microphone and try again.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else if (error.name === 'NotAllowedError') {
+        toast.error('Microphone access denied. Please allow microphone access in your browser settings.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else if (error.name === 'NotReadableError') {
+        toast.error('Microphone is already in use by another application.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else if (error.name === 'OverconstrainedError') {
+        toast.error('Microphone does not meet the required constraints.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else if (error.name === 'SecurityError') {
+        toast.error('Microphone access blocked due to security restrictions.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else if (error.name === 'AbortError') {
+        toast.error('Microphone access was interrupted.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      } else {
+        toast.error('Failed to access microphone. Please check your device and permissions.', {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+      }
     }
   };
 
@@ -60,7 +126,7 @@ const AudioHandler = ({ onAudioRecorded, isLoading, onRecordingStart, onRecordin
         <img
           src={logoImage}
           alt="Voice"
-          className={`audio-logo ${isRecording ? 'listening' : ''} ${isLoading ? 'loading' : ''}`}
+          className={`audio-logo ${isRecording ? 'listening' : ''} ${isLoading ? 'loading' : ''} ${isPlaying ? 'playing' : ''}`}
           style={{
             width: '30px',
             height: '30px',
