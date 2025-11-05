@@ -7,6 +7,8 @@ import {
   UserOutlined,
   PlayCircleOutlined,
   LogoutOutlined,
+  CopyOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import logoImage from "../assets/AiIcon.jpg";
@@ -325,6 +327,98 @@ const Chat = () => {
     }
   };
 
+  const handleRegenerate = async (messageId) => {
+    // Find the user message that precedes this AI message
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1 || messageIndex === 0) return;
+
+    const userMessage = messages[messageIndex - 1];
+    if (userMessage.sender !== "user") return;
+
+    // Remove the current AI message and any messages after it
+    setMessages(prev => prev.slice(0, messageIndex));
+    setIsLoading(true);
+
+    const typingMessage = {
+      id: "typing-indicator",
+      text: "",
+      sender: "ai",
+      timestamp: new Date(),
+      isTyping: true,
+    };
+    setMessages((prev) => [...prev, typingMessage]);
+
+    try {
+      const token = localStorage.getItem("token");
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      const response = await fetch(`${API_BASE_URL}/api/auth/chat-question`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          question: userMessage.text,
+          user_id: user.id,
+          token: token,
+          assistantId: "yoga_assistant",
+          ...(selectedChatId && { chat_id: selectedChatId }),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+
+        const aiMessage = {
+          id: Date.now() + 1,
+          text: data.data.answer,
+          sender: "ai",
+          timestamp: new Date(),
+          audioUrl: null,
+        };
+        setMessages((prev) => [...prev, aiMessage]);
+
+        // If this was a new chat, update selectedChatId
+        if (!selectedChatId) {
+          setSelectedChatId(data.data.chat_id);
+        }
+      } else {
+        setMessages((prev) =>
+          prev.filter((msg) => msg.id !== "typing-indicator")
+        );
+
+        const errorMessage = {
+          id: Date.now() + 1,
+          text: data.message || "Failed to regenerate response",
+          sender: "ai",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      }
+    } catch (error) {
+      console.error("Regenerate API error:", error);
+      setMessages((prev) =>
+        prev.filter((msg) => msg.id !== "typing-indicator")
+      );
+
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "Sorry, I encountered an error while regenerating. Please try again.",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (sidebarOpen) {
       fetchChatList();
@@ -369,11 +463,14 @@ const Chat = () => {
                     isRecording && message.sender === "ai" ? "recording" : ""
                   } ${isPlaying && message.sender === "ai" ? "playing" : ""}`}
                   src={message.sender === "ai" ? logoImage : null}
-                  size={40}
+                  size={50}
                 >
                   {message.sender === "user" ? user.email.charAt(0).toUpperCase() : null}
                 </Avatar>
                 <div className="chat-message-body">
+                  <div className="chat-message-sender-name">
+                    {message.sender === "ai" ? "Drona" : "You"}
+                  </div>
                   <div className="chat-message-content">
                     {message.isTyping ? (
                       <div className="typing-indicator">
@@ -403,6 +500,31 @@ const Chat = () => {
                       >
                         Play Audio
                       </Button>
+                    </div>
+                  )}
+                  {!message.isTyping && (
+                    <div className="chat-message-actions">
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CopyOutlined />}
+                        onClick={() => {
+                          navigator.clipboard.writeText(message.text);
+                          message.info('Copied to clipboard');
+                        }}
+                        className="action-button"
+                        title="Copy"
+                      />
+                      {message.sender === "ai" && (
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<ReloadOutlined />}
+                          onClick={() => handleRegenerate(message.id)}
+                          className="action-button"
+                          title="Regenerate"
+                        />
+                      )}
                     </div>
                   )}
                   <div className="chat-message-time">

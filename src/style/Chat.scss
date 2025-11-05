@@ -199,28 +199,46 @@
   align-self: flex-start;
 }
 
+.chat-message-body {
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100% - 70px); // Account for avatar and gap
+  min-width: 0; // Allow text to wrap properly
+}
+
+.chat-message-sender-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+
 .chat-message-content {
   //background: #F4F4F4;
   padding: 12px 16px;
   border-radius: 18px;
   margin-bottom: 4px;
   word-wrap: break-word;
+  overflow-wrap: break-word; // Add this
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-family: 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 400;
   font-size: 17px;
-  line-height: 100%;
+  line-height: 1.4; // Change from 100% to 1.4 for better readability
   letter-spacing: -0.1px;
   color: #ffffff;
+  white-space: pre-wrap; // Add this to preserve line breaks
 }
 
 .chat-message-user .chat-message-content {
- 
   color: rgb(255, 255, 255);
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .chat-message-ai .chat-message-content {
- // background: #F4F4F4;
+  background: rgba(255, 255, 255, 0.1); // Add subtle background
   color: #ffffff;
 }
 
@@ -605,10 +623,37 @@
   }
 }
 
-.chat-message-user .chat-message-avatar {
+.chat-message-user .chat-message-avatar,
+.chat-message-ai .chat-message-avatar {
   border: 2px solid white;
   background-color: #ff5722;
   color: white;
+}
+
+.chat-message-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  padding: 0 4px;
+}
+
+.action-button {
+  color: white;
+  padding: 4px 8px;
+  height: auto;
+  font-size: 14px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  &:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
 }
 
 @keyframes shrink {
