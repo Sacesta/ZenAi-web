@@ -1,6 +1,10 @@
-# TODO: Make Logo Circular on Landing, Login, VerifyOTP, and Chat Pages
+# TODO: Fix Chat Functionality for Existing Chats
 
-- [x] Edit src/style/Common.scss to add `border-radius: 50%` to the `.common-logo` class to make the logo image circular and reduce size to 200px (100px on mobile).
-- [x] Edit src/style/Chat.scss to add `border-radius: 50%` to the `.chat-welcome-logo` class to make the welcome logo circular in the Chat page.
-- [x] Edit src/pages/Chat.jsx to reduce AI avatar size to 60px and make it circular.
-- [x] Edit src/style/Chat.scss to change the chat container background to match the header color (rgba(255, 255, 255, 0.1) with backdrop-filter: blur(10px)).
+## Tasks
+- [x] Modify `handleSendMessage` in `src/pages/Chat.jsx` to include `chat_id` in the API request body when `selectedChatId` is set.
+- [x] After a successful API response, if `selectedChatId` is null (new chat), update `selectedChatId` to the returned `chat_id` from the response.
+- [ ] Test the chat functionality to ensure messages append to existing chats and new chats are properly selected.
+
+## Notes
+- Voice messages are not handled in this fix as the backend code provided doesn't support `chat_id` for voice-to-voice API.
+- Ensure the sidebar chat selection and history loading work correctly.

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Input, Button, Avatar, message } from "antd";
+import { Input, Button, Avatar, message, Dropdown, Menu } from "antd";
 import {
   SendOutlined,
   ArrowLeftOutlined,
@@ -84,6 +84,7 @@ const Chat = () => {
           user_id: user.id,
           token: token,
           assistantId: "yoga_assistant",
+          ...(selectedChatId && { chat_id: selectedChatId }),
         }),
       });
 
@@ -96,12 +97,17 @@ const Chat = () => {
 
         const aiMessage = {
           id: Date.now() + 1,
-          text: data.data.answerrr,
+          text: data.data.answer,
           sender: "ai",
           timestamp: new Date(),
           audioUrl: null, // Will be set if voice response is generated
         };
         setMessages((prev) => [...prev, aiMessage]);
+
+        // If this was a new chat, update selectedChatId
+        if (!selectedChatId) {
+          setSelectedChatId(data.data.chat_id);
+        }
       } else {
         setMessages((prev) =>
           prev.filter((msg) => msg.id !== "typing-indicator")
@@ -326,163 +332,190 @@ const Chat = () => {
   }, [sidebarOpen]);
 
   return (
-    <div className="chat-container">
-      <div className="chat-header">
-        <Button
-          type="text"
-          className="chat-toggle-button"
-          icon={<MenuOutlined />}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        />
-        <div className="chat-logo-container">
-          <h1 style={{ color: "white" }}>Drona</h1>
-        </div>
-        <div className="chat-user-info">
-          <span className="user-email">{user.email}</span>
+    <div className={`chat-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      <div className="chat-main">
+        <div className="chat-header">
           <Button
             type="text"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            className="logout-button"
+            className="chat-toggle-button"
+            icon={<MenuOutlined />}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
           />
-        </div>
-      </div>
-
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <div className="chat-welcome">
-            <img
-              src={logoImage}
-              alt="ZenAI Logo"
-              className="chat-welcome-logo"
-            />
-            <div className="chat-welcome-text">
-              Welcome to Drona How can I help you today?
-            </div>
+          <div className="chat-logo-container">
+            <h1 style={{ color: "white" }}>Drona</h1>
           </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`chat-message chat-message-${message.sender}`}
-            >
-              <Avatar
-                className={`chat-message-avatar ${
-                  isRecording && message.sender === "ai" ? "recording" : ""
-                } ${isPlaying && message.sender === "ai" ? "playing" : ""}`}
-                icon={message.sender === "user" ? <UserOutlined /> : null}
-                src={message.sender === "ai" ? logoImage : null}
-                size={60}
+        </div>
+
+        <div className="chat-messages">
+          {messages.length === 0 ? (
+            <div className="chat-welcome">
+              <img
+                src={logoImage}
+                alt="ZenAI Logo"
+                className="chat-welcome-logo"
               />
-              <div className="chat-message-body">
-                <div className="chat-message-content">
-                  {message.isTyping ? (
-                    <div className="typing-indicator">
-                      <span></span>
-                      <span></span>
-                      <span></span>
+              <div className="chat-welcome-text">
+                Welcome to Drona How can I help you today?
+              </div>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`chat-message chat-message-${message.sender}`}
+              >
+                <Avatar
+                  className={`chat-message-avatar ${
+                    isRecording && message.sender === "ai" ? "recording" : ""
+                  } ${isPlaying && message.sender === "ai" ? "playing" : ""}`}
+                  src={message.sender === "ai" ? logoImage : null}
+                  size={40}
+                >
+                  {message.sender === "user" ? user.email.charAt(0).toUpperCase() : null}
+                </Avatar>
+                <div className="chat-message-body">
+                  <div className="chat-message-content">
+                    {message.isTyping ? (
+                      <div className="typing-indicator">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                    ) : (
+                      message.text
+                    )}
+                  </div>
+                  {message.audioUrl && message.sender === "ai" && (
+                    <div className="chat-message-audio">
+                      <Button
+                        type="text"
+                        icon={<PlayCircleOutlined style={{ color: "#52c41a" }} />}
+                        onClick={() => {
+                          const audio = new Audio(message.audioUrl);
+                          setIsPlaying(true);
+                          audio.play();
+                          audio.onended = () => {
+                            setIsPlaying(false);
+                          };
+                        }}
+                        className="chat-message-play-button"
+                        size="small"
+                      >
+                        Play Audio
+                      </Button>
                     </div>
-                  ) : (
-                    message.text
                   )}
+                  <div className="chat-message-time">
+                    {formatTime(message.timestamp)}
+                  </div>
                 </div>
-                {message.audioUrl && message.sender === "ai" && (
-                  <div className="chat-message-audio">
+              </div>
+            ))
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <div className="chat-input-container">
+          <div className="chat-input-wrapper">
+            <Input
+              className="chat-input"
+              placeholder="Type your message..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onPressEnter={handleKeyPress}
+              suffix={
+                <div className="chat-input-suffix">
+                  {!inputValue.trim() ? (
+                    <AudioHandler
+                      onAudioRecorded={handleAudioRecorded}
+                      isLoading={isLoading}
+                      onRecordingStart={() => setIsRecording(true)}
+                      onRecordingStop={() => setIsRecording(false)}
+                    />
+                  ) : (
                     <Button
                       type="text"
-                      icon={<PlayCircleOutlined style={{ color: "#52c41a" }} />}
-                      onClick={() => {
-                        const audio = new Audio(message.audioUrl);
-                        setIsPlaying(true);
-                        audio.play();
-                        audio.onended = () => {
-                          setIsPlaying(false);
-                        };
-                      }}
-                      className="chat-message-play-button"
-                      size="small"
-                    >
-                      Play Audio
-                    </Button>
-                  </div>
-                )}
-                <div className="chat-message-time">
-                  {formatTime(message.timestamp)}
+                      icon={<SendOutlined />}
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim() || isLoading}
+                      className="chat-send-button"
+                      loading={isLoading}
+                    />
+                  )}
                 </div>
-              </div>
-            </div>
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
-
-      <div className="chat-input-container">
-        <div className="chat-input-wrapper">
-          <Input
-            className="chat-input"
-            placeholder="Type your message..."
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onPressEnter={handleKeyPress}
-            suffix={
-              <div className="chat-input-suffix">
-                {!inputValue.trim() ? (
-                  <AudioHandler
-                    onAudioRecorded={handleAudioRecorded}
-                    isLoading={isLoading}
-                    onRecordingStart={() => setIsRecording(true)}
-                    onRecordingStop={() => setIsRecording(false)}
-                  />
-                ) : (
-                  <Button
-                    type="text"
-                    icon={<SendOutlined />}
-                    onClick={handleSendMessage}
-                    disabled={!inputValue.trim() || isLoading}
-                    className="chat-send-button"
-                    loading={isLoading}
-                  />
-                )}
-              </div>
-            }
-          />
-        </div>
-      </div>
-
-      {sidebarOpen && (
-        <div className="chat-sidebar">
-          <div className="chat-sidebar-header">
-            <h3>Chat History</h3>
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => setSidebarOpen(false)}
+              }
             />
           </div>
-          <div className="chat-list">
-            {chatList.length === 0 ? (
-              <div className="chat-list-empty">No chats available</div>
-            ) : (
-              chatList.map((chat) => (
-                <div
-                  key={chat.chat_id}
-                  className={`chat-list-item ${
-                    selectedChatId === chat.chat_id ? "active" : ""
-                  }`}
-                  onClick={() => handleChatSelect(chat.chat_id)}
-                >
-                  <div className="chat-list-title">
-                    {chat.first_question || `Chat ${chat.chat_id}`}
-                  </div>
-                  <div className="chat-list-date">
-                    {new Date(chat.created_at).toLocaleDateString()}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
         </div>
-      )}
+      </div>
+
+      <div className={`chat-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="chat-sidebar-header">
+          <Button
+            className="sidebar-new-chat-button"
+            icon={<span style={{ fontSize: '18px' }}>+</span>}
+            onClick={() => {
+              setMessages([]);
+              setSelectedChatId(null);
+              setSidebarOpen(false);
+            }}
+          >
+            New Chat
+          </Button>
+          {/* <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => setSidebarOpen(false)}
+            style={{ color: 'white' }}
+          /> */}
+        </div>
+        <div className="chat-list">
+          {chatList.length === 0 ? (
+            <div className="chat-list-empty">No chats available</div>
+          ) : (
+            chatList.map((chat) => (
+              <div
+                key={chat.chat_id}
+                className={`chat-list-item ${
+                  selectedChatId === chat.chat_id ? "active" : ""
+                }`}
+                onClick={() => handleChatSelect(chat.chat_id)}
+              >
+                <div className="chat-list-title">
+                  {chat.first_question || `Chat ${chat.chat_id}`}
+                </div>
+                <div className="chat-list-date">
+                  {new Date(chat.created_at).toLocaleDateString()}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="chat-sidebar-footer">
+          <Dropdown
+            overlay={
+              <Menu>
+                <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={handleLogout}>
+                  Logout
+                </Menu.Item>
+              </Menu>
+            }
+            trigger={['click']}
+            placement="topRight"
+          >
+            <Button
+              type="text"
+              className="sidebar-profile-button"
+              icon={<UserOutlined />}
+            >
+              <div className="profile-info">
+                <span className="profile-label">Profile</span>
+                <span className="profile-email">{user.email}</span>
+              </div>
+            </Button>
+          </Dropdown>
+        </div>
+      </div>
     </div>
   );
 };

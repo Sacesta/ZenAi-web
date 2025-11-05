@@ -1,10 +1,20 @@
 .chat-container {
   height: 100vh;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   background: #000000;
- 
   font-family: 'Arial', sans-serif;
+
+  &.sidebar-open .chat-main {
+    margin-left: 300px;
+  }
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
 }
 
 .chat-header {
@@ -15,19 +25,103 @@
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
-.user-email {
-  color: white;
-  font-size: 16px;
-  font-weight: 400;
-  margin-left: 16px;
+
+// Remove user info from header
+.chat-user-info {
+  display: none; // Hide this section
 }
-.logout-button{
+
+// Update sidebar header
+.chat-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  .ant-btn {
+    color: white;
+
+    &:hover {
+      color: #e0e0e0;
+    }
+  }
+}
+
+// Add New Chat button in sidebar
+.sidebar-new-chat-button {
+  background: #ff5722;
   color: white;
-  font-size: 16px;
-  
+  border: none;
+  border-radius: 25px;
+  padding: 10px 24px;
+  height: auto;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  margin-right: 12px;
+  justify-content: center;
 
+  &:hover {
+    background: #f4511e;
+    color: white;
+  }
+}
 
+// Add sidebar footer for Profile
+.chat-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+}
 
+.sidebar-profile-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  text-align: left;
+  height: auto;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: white;
+  }
+
+  .anticon {
+    font-size: 24px;
+  }
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  gap: 2px;
+}
+
+.profile-label {
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
 }
 .chat-back-button {
   color: white;
@@ -59,6 +153,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: #000000;
 }
 
 .chat-welcome {
@@ -68,6 +163,9 @@
   justify-content: center;
   height: 100%;
   text-align: center;
+  background: #000000;
+  margin: -20px;
+  padding: 20px;
 }
 
 .chat-welcome-logo {
@@ -79,7 +177,7 @@
 }
 
 .chat-welcome-text {
-  color: white;
+  color: #ffffff;
   font-size: 18px;
   font-weight: 300;
 }
@@ -293,12 +391,17 @@
   left: 0;
   width: 300px;
   height: 100vh;
-  background: #000000;
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  background: #1a1a1a;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 1000;
   display: flex;
   flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+
+  &.open {
+    transform: translateX(0);
+  }
 }
 
 .chat-sidebar-header {
@@ -328,41 +431,58 @@
 .chat-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 0;
+  padding: 0;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
 }
 
 .chat-list-empty {
   padding: 20px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 14px;
 }
 
 .chat-list-item {
-  padding: 12px 20px;
+  padding: 16px 20px;
   cursor: pointer;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background-color 0.2s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
   }
 
   &.active {
-    background: rgba(0, 123, 255, 0.2);
-    border-left: 3px solid #007bff;
+    background: rgba(255, 87, 34, 0.1);
+    border-left: 3px solid #ff5722;
   }
 }
 
 .chat-list-title {
   color: white;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chat-list-date {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.5);
   font-size: 12px;
 }
 
@@ -485,6 +605,12 @@
   }
 }
 
+.chat-message-user .chat-message-avatar {
+  border: 2px solid white;
+  background-color: #ff5722;
+  color: white;
+}
+
 @keyframes shrink {
   0% {
     transform: scale(1);
@@ -505,6 +631,18 @@
 
 // Responsive design
 @media (max-width: 768px) {
+  .chat-sidebar {
+    width: 280px;
+  }
+
+  .sidebar-profile-button {
+    padding: 10px 12px;
+  }
+
+  .profile-email {
+    max-width: 150px;
+  }
+
   .chat-messages {
     padding: 16px;
   }
