@@ -429,6 +429,7 @@ const Chat = () => {
     <div className={`chat-container ${sidebarOpen ? 'sidebar-open' : ''}`}>
       <div className="chat-main">
         <div className="chat-header">
+          
           <Button
             type="text"
             className="chat-toggle-button"
@@ -436,7 +437,7 @@ const Chat = () => {
             onClick={() => setSidebarOpen(!sidebarOpen)}
           />
           <div className="chat-logo-container">
-            <h1 style={{ color: "white" }}>Drona</h1>
+            <h1>Drona AI</h1>
           </div>
         </div>
 
