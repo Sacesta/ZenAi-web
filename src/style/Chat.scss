@@ -783,15 +783,20 @@
 .typing-indicator {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 8px 0;
   
   span {
-    width: 8px;
-    height: 8px;
-    background-color: #666;
+    width: 10px;
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 50%;
-    animation: typing 1.4s infinite;
+    animation: typingBounce 1.4s ease-in-out infinite;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    &:nth-child(1) {
+      animation-delay: 0s;
+    }
     
     &:nth-child(2) {
       animation-delay: 0.2s;
@@ -803,14 +808,37 @@
   }
 }
 
-@keyframes typing {
+@keyframes typingBounce {
   0%, 60%, 100% {
     transform: translateY(0);
-    opacity: 0.7;
+    opacity: 0.4;
   }
   30% {
-    transform: translateY(-10px);
+    transform: translateY(-12px);
     opacity: 1;
+  }
+}
+
+// Typing text animation with cursor
+.typing-text {
+  display: inline;
+  position: relative;
+  
+  .typing-cursor {
+    display: inline-block;
+    margin-left: 2px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 300;
+    animation: blinkCursor 1s infinite;
+  }
+}
+
+@keyframes blinkCursor {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
   }
 }
 

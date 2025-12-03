@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Typography } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import logoImage from "../assets/Logo.jpg";
+import logoImage from "../assets/Logo.png";
 import "../style/Common.scss";
 
 const { Title, Text } = Typography;

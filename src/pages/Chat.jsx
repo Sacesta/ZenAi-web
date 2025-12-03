@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import logoImage from "../assets/AiIcon.jpg";
 import AudioHandler from "../components/AudioHandler";
+import TypingText from "../components/TypingText";
 
 import "../style/Chat.scss";
 
@@ -103,6 +104,7 @@ const Chat = () => {
           sender: "ai",
           timestamp: new Date(),
           audioUrl: null, // Will be set if voice response is generated
+          isNewMessage: true, // Flag to indicate this should use typing animation
         };
         setMessages((prev) => [...prev, aiMessage]);
 
@@ -200,6 +202,7 @@ const Chat = () => {
           sender: "ai",
           timestamp: new Date(),
           audioUrl: data.data.outputAudioUrl,
+          isNewMessage: true, // Flag to indicate this should use typing animation
         };
         setMessages((prev) => [...prev, aiMessage]);
 
@@ -238,9 +241,12 @@ const Chat = () => {
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (!isLoading && inputValue.trim()) {
+        handleSendMessage();
+      }
     }
   };
+
 
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -381,6 +387,7 @@ const Chat = () => {
           sender: "ai",
           timestamp: new Date(),
           audioUrl: null,
+          isNewMessage: true, // Flag to indicate this should use typing animation
         };
         setMessages((prev) => [...prev, aiMessage]);
 
@@ -479,6 +486,21 @@ const Chat = () => {
                         <span></span>
                         <span></span>
                       </div>
+                    ) : message.sender === "ai" && message.isNewMessage ? (
+                      <TypingText 
+                        text={message.text} 
+                        speed={15}
+                        onComplete={() => {
+                          // Mark message as completed typing
+                          setMessages((prev) =>
+                            prev.map((msg) =>
+                              msg.id === message.id
+                                ? { ...msg, isNewMessage: false }
+                                : msg
+                            )
+                          );
+                        }}
+                      />
                     ) : (
                       message.text
                     )}
@@ -488,19 +510,10 @@ const Chat = () => {
                      
                     </div>
                   )}
-                  {!message.isTyping && (
+                  {!message.isTyping && 
+                   (message.sender === "user" || !message.isNewMessage) && (
                     <div className="chat-message-actions">
-                      <Button
-                        type="text"
-                        size="small"
-                        icon={<CopyOutlined />}
-                        onClick={() => {
-                          navigator.clipboard.writeText(message.text);
-                          message.info('Copied to clipboard');
-                        }}
-                        className="action-button"
-                        title="Copy"
-                      />
+                    
                       {message.sender === "ai" && (
                         <Button
                           type="text"
@@ -532,6 +545,8 @@ const Chat = () => {
               onChange={(e) => setInputValue(e.target.value)}
               onPressEnter={handleKeyPress}
               suffix={
+
+
                 <div className="chat-input-suffix">
                   {!inputValue.trim() ? (
                     <AudioHandler
