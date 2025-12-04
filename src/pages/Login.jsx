@@ -3,7 +3,7 @@ import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import logoImage from '../assets/logo.png';
+import logoImage from '../assets/Logo.png';
 import '../style/Common.scss';
 import '../style/Login.scss';
 
