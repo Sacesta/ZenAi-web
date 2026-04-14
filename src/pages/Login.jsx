@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message, Card, Typography, Space } from 'antd';
-import { MailOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, message, Typography } from 'antd';
+import { MailOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import logoImage from '../assets/Logo.png';
+import desktopBg from '../assets/Desktop.png';
 import '../style/Common.scss';
 import '../style/Login.scss';
 
@@ -42,25 +43,42 @@ const Login = () => {
   };
 
   return (
-    <div className="common-container">
+    <div className="common-container" style={{ background: 'none' }}>
+      {/* Sharp Desktop Background used at all places */}
+      <img
+        src={desktopBg}
+        alt="Background"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          zIndex: 0,
+          imageRendering: '-webkit-optimize-contrast'
+        }}
+      />
+
       {/* Silhouette Figure */}
-      <div className="common-silhouette">
+      <div className="common-silhouette" style={{ zIndex: 5 }}>
         {/* Head */}
         <div className="common-silhouette-head" />
       </div>
 
-      <div className="common-circle" />
+      <div className="common-circle" style={{ zIndex: 5 }} />
 
       <img
         src={logoImage}
         alt="Zenn Logo"
         className="common-logo"
+        style={{ zIndex: 10 }}
       />
 
-      <div className="common-card-center">
+      <div className="common-card-center" style={{ zIndex: 15 }}>
         <Title level={3} className="common-title">
           Welcome to Drona AI
-          
         </Title>
 
         <Text className="common-text">

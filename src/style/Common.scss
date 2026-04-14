@@ -8,6 +8,10 @@
   background-image: url("../assets/background-login.png");
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: -webkit-optimize-contrast;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   overflow: hidden;
   padding: 20px;
 

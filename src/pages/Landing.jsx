@@ -3,6 +3,7 @@ import { Button, Typography } from "antd";
 import { PlayCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import logoImage from "../assets/Logo.png";
+import desktopBg from "../assets/Desktop.png";
 import "../style/Common.scss";
 
 const { Title, Text } = Typography;
@@ -15,16 +16,33 @@ const Landing = () => {
   };
 
   return (
-    <div className="common-container">
-      <div className="common-silhouette">
+    <div className="common-container" style={{ background: 'none' }}>
+      {/* Sharp Desktop Background used at all places */}
+      <img
+        src={desktopBg}
+        alt="Background"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          zIndex: 0,
+          imageRendering: '-webkit-optimize-contrast'
+        }}
+      />
+
+      <div className="common-silhouette" style={{ zIndex: 5 }}>
         <div className="common-silhouette-head" />
       </div>
 
-      <div className="common-circle" />
+      <div className="common-circle" style={{ zIndex: 5 }} />
 
-      <img src={logoImage} alt="Zenn Logo" className="common-logo" />
+      <img src={logoImage} alt="Zenn Logo" className="common-logo" style={{ zIndex: 10 }} />
 
-      <div className="common-card">
+      <div className="common-card" style={{ zIndex: 15 }}>
         <Title level={3} className="common-title">
           Path to your Inner Drona
         </Title>

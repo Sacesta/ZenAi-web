@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { Form, Input, Button, Typography } from "antd";
-import { LockOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import logoImage from "../assets/Logo.png";
+import desktopBg from "../assets/Desktop.png";
 import "../style/Common.scss";
 import "../style/Login.scss";
 
@@ -43,7 +44,6 @@ const VerifyOTP = () => {
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      // Show proper error message from API response
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
       } else {
@@ -72,10 +72,7 @@ const VerifyOTP = () => {
   };
 
   const handleInputChange = (index, value) => {
-    // Update form value
     form.setFieldsValue({ [`otp${index + 1}`]: value });
-
-    // Move to next input if a digit is entered
     if (value.length === 1 && index < 3) {
       inputRefs[index + 1].current.focus();
     }
@@ -85,7 +82,6 @@ const VerifyOTP = () => {
     if (e.key === 'Backspace') {
       const currentValue = form.getFieldValue(`otp${index + 1}`);
       if (!currentValue && index > 0) {
-        // Move to previous input and clear it
         inputRefs[index - 1].current.focus();
         form.setFieldsValue({ [`otp${index}`]: '' });
       }
@@ -108,22 +104,39 @@ const VerifyOTP = () => {
   };
 
   return (
-    <div className="common-container">
-      <div className="common-silhouette">
+    <div className="common-container" style={{ background: 'none' }}>
+      {/* Sharp Desktop Background used at all places */}
+      <img
+        src={desktopBg}
+        alt="Background"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          zIndex: 0,
+          imageRendering: '-webkit-optimize-contrast'
+        }}
+      />
+
+      <div className="common-silhouette" style={{ zIndex: 5 }}>
         <div className="common-silhouette-head" />
       </div>
 
-      <div className="common-circle" />
+      <div className="common-circle" style={{ zIndex: 5 }} />
 
-      <img src={logoImage} alt="Zenn Logo" className="common-logo" />
+      <img src={logoImage} alt="Zenn Logo" className="common-logo" style={{ zIndex: 10 }} />
 
-      <div className="common-card-center">
+      <div className="common-card-center" style={{ zIndex: 15 }}>
         <Title level={3} className="common-title">
           Verify Your Email
         </Title>
 
         <Text className="common-text">
-          Check {email}for the 4-digit code and enter it below.
+          Check {email} for the 4-digit code and enter it below.
         </Text>
 
         <Form
